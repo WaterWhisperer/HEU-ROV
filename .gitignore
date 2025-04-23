@@ -1,0 +1,9 @@
+# 忽略构建目录
+build/
+# 忽略编译产物
+*.o
+*.so
+*.exe
+# 忽略 IDE 配置文件
+.vscode/
+folder-alias.json
