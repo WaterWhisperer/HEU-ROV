@@ -9,7 +9,7 @@ import sys
 from ultralytics import YOLO
 
 # 载入 YOLOv8 模型
-model = YOLO('weight/yolov8n.pt')
+model = YOLO('crack/weight/yolov8n.pt')
 
 # -------------------------- 新增部分：鼠标回调相关全局变量 --------------------------
 measure_points = []  # 存储测量点的坐标
