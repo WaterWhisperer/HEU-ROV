@@ -7,12 +7,8 @@ import argparse
 import os.path
 import random
 
-model = YOLO('weight/yolov8n.pt')
+model = YOLO('crack/weights/yolov8n.pt')
 
-
-
-
-# 计算检测到的物体中心的平均距离的函数
 # 计算检测到的物体中心的平均距离的函数
 def get_mid_pos(frame, box, depth_data, randnum):
     distance_list = []
