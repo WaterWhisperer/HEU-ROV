@@ -18,7 +18,7 @@ def create_mouse_handler(window_name):
         current_window = window_name
         
         # 框选窗口处理（左键拖拽）
-        if window_name == "Box Measurement":
+        if window_name == "Depth Measurement":
             # 左键按下：记录起点
             if event == cv2.EVENT_LBUTTONDOWN:
                 box_points = [(x, y)]  
@@ -35,7 +35,7 @@ def create_mouse_handler(window_name):
                     box_points[1] = (x, y)       
 
         # 点测窗口处理（左键点击）
-        elif window_name == "Point Measurement":
+        elif window_name == "Distance Measurement":
             if event == cv2.EVENT_LBUTTONDOWN:
                 if len(meas_points) < 2:
                     meas_points.append((x, y))
@@ -97,10 +97,10 @@ if __name__ == "__main__":
     depth_intrinsics = depth_profile.as_video_stream_profile().get_intrinsics()
     
     # 创建双窗口
-    cv2.namedWindow("Box Measurement")
-    cv2.namedWindow("Point Measurement")
-    cv2.setMouseCallback("Box Measurement", create_mouse_handler("Box Measurement")) 
-    cv2.setMouseCallback("Point Measurement", create_mouse_handler("Point Measurement"))
+    cv2.namedWindow("Depth Measurement")
+    cv2.namedWindow("Distance Measurement")
+    cv2.setMouseCallback("Depth Measurement", create_mouse_handler("Depth Measurement")) 
+    cv2.setMouseCallback("Distance Measurement", create_mouse_handler("Distance Measurement"))
     
     try:
         while True:
@@ -119,11 +119,11 @@ if __name__ == "__main__":
             # 框选窗口处理
             if len(box_points) >= 1:
                 # 实时绘制拖拽框
-                if current_window == "Box Measurement" and len(box_points) == 2:
+                if current_window == "Depth Measurement" and len(box_points) == 2:
                     cv2.rectangle(box_img, box_points[0], box_points[1], (0,200,0), 2)
                     
                 # 完成测量后显示结果
-                if len(box_points) == 2 and current_window != "Box Measurement":
+                if len(box_points) == 2:
                     depth = calculate_box_depth(box_points, depth_image)
                     cv2.rectangle(box_img, box_points[0], box_points[1], (0,255,0), 2)
                     cv2.putText(box_img, f"Depth: {depth:.1f}mm", 
@@ -146,8 +146,8 @@ if __name__ == "__main__":
                     (mid_x, mid_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,0), 2)
             
             # 显示处理
-            cv2.imshow("Box Measurement", box_img)
-            cv2.imshow("Point Measurement", point_img)
+            cv2.imshow("Depth Measurement", box_img)
+            cv2.imshow("Distance Measurement", point_img)
             
             # 退出控制
             if cv2.waitKey(1) in [ord('q'), 27]:
