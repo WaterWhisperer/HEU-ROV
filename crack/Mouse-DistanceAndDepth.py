@@ -1,3 +1,9 @@
+'''
+文件名： Mouse-DistanceAndDepth.py
+功能：
+    Depth Measurement窗口：通过鼠标左键拖动框选后，计算框选区域的深度。
+    Distance Measurement窗口：通过鼠标左键点击两点测量实际距离。
+'''
 import pyrealsense2 as rs
 import numpy as np
 import cv2
