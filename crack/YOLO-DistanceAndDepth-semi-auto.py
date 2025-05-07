@@ -1,3 +1,9 @@
+'''
+文件名：YOLO-DistanceAndDepth-semi-auto.py
+功能：半自动测量距离和深度
+    自动：利用 YOLO 模型进行目标检测，并利用深度相机获取物体的深度距离信息。
+    手动：利用鼠标点击获取两点的三维距离信息。
+'''
 import pyrealsense2 as rs
 import numpy as np
 import cv2
