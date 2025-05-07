@@ -1,6 +1,6 @@
 '''
 文件名：YOLO-WidthAndDepth-auto.py
-功能：使用YOLO模型进行目标检测，并输出识别框的深度和宽度信息。
+功能：使用YOLO模型进行目标检测，并自动输出识别框的深度和宽度信息。
 '''
 import pyrealsense2 as rs
 import numpy as np
