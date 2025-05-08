@@ -1,6 +1,6 @@
 # CMakeLists.txt
 cmake_minimum_required(VERSION 3.10)
-project(CombineDistanceAndDepth)
+project(DistanceAndDepth)
 
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 11)
@@ -15,7 +15,7 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${realsense2_INCLUDE_DIRS})
 
 # 添加可执行文件
-add_executable(DistanceAndDepth Combine-DistanceAndDepth.cpp)
+add_executable(DistanceAndDepth test.cpp)
 
 # 链接库文件
 target_link_libraries(DistanceAndDepth ${OpenCV_LIBS} ${realsense2_LIBRARY})
