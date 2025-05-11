@@ -131,10 +131,19 @@ if __name__ == "__main__":
                 if len(box_points) == 2:
                     depth = calculate_box_depth(box_points, depth_image)
                     cv2.rectangle(left_img, box_points[0], box_points[1], (0,255,0), 2)
-                    cv2.putText(left_img, f"Depth: {depth:.1f}mm", 
-                    (box_points[0][0], box_points[0][1]-10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,255), 2)
-            
+                    
+                    # 调整深度值文本显示位置
+                    text = f"Depth: {depth:.1f}mm"
+                    # 获取文本大小
+                    (text_width, text_height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                    
+                    # 计算文本显示位置，确保在视图范围内
+                    text_x = min(max(box_points[0][0], 10), WINDOW_WIDTH - text_width - 10)
+                    text_y = max(box_points[0][1] - 10, text_height + 10)
+                    
+                    cv2.putText(left_img, text, (text_x, text_y),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0,255,255), 2)
+
             # 距离测量处理（右侧）
             if len(meas_points) >= 1:
                 for pt in meas_points:
@@ -143,10 +152,21 @@ if __name__ == "__main__":
                 if len(meas_points) == 2:
                     cv2.line(right_img, meas_points[0], meas_points[1], (255,100,100), 2)
                     distance = calculate_3d_distance(meas_points)
+                    
+                    # 计算中点
                     mid_x = (meas_points[0][0] + meas_points[1][0]) // 2
                     mid_y = (meas_points[0][1] + meas_points[1][1]) // 2
-                    cv2.putText(right_img, f"Distance: {distance:.1f}mm",
-                    (mid_x, mid_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,0), 2)
+                    
+                    # 获取文本内容和大小
+                    text = f"Distance: {distance:.1f}mm"
+                    (text_width, text_height), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)
+                    
+                    # 调整文本位置确保在视图范围内
+                    text_x = min(max(mid_x - text_width//2, 10), WINDOW_WIDTH - text_width - 10)
+                    text_y = min(max(mid_y, text_height + 10), 480 - 10)
+                    
+                    cv2.putText(right_img, text, (text_x, text_y),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,0), 2)
             
             # 合并显示
             combined = np.hstack((left_img, right_img))
