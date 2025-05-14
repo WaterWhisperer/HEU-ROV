@@ -1,3 +1,17 @@
+'''
+文件名：3D-Structure-Measure.py
+功能：使用双目相机测量3D结构物的长度、宽度和高度。
+使用方法：
+    Click 2 points to measure distance.
+    After selecting 2 points:
+        Press 'l' for Length
+        Press 'w' for Width
+        Press 'h' for Height
+    Press 'c' to clear points.
+    Press 'x' to clear all dimensions.
+    Press 'p' to plot 3D (need L,W,H).
+    Press 'q' to quit.
+'''
 import pyrealsense2 as rs
 import numpy as np
 import cv2

@@ -1,6 +1,6 @@
 # 三维结构物测量
 
-该项目用于实现对三维结构物的测量
+该项目用于实现对三维结构物的长宽高测量
 
 ## 硬件
 
@@ -19,3 +19,15 @@ pip install -r ./vision_structure_measurement/requirements.txt
 ```python
 python vision_structure_measurement/3D-Structure-Measure.py 
 ```
+
+### 使用方法
+
+Click 2 points to measure distance.
+After selecting 2 points:
+    Press 'l' for Length
+    Press 'w' for Width
+    Press 'h' for Height
+Press 'c' to clear points.
+Press 'x' to clear all dimensions.
+Press 'p' to plot 3D (need L,W,H).
+Press 'q' to quit.
