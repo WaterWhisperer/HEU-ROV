@@ -2,3 +2,4 @@ pyrealsense2
 opencv-python
 numpy
 matplotlib
+# pillow # 如果需要使用PIL，请安装此库
