@@ -8,7 +8,7 @@
 
 ## 项目结构
 
-```bash
+```plaintext
 vision_crack_detection
 ├── cpp # C++代码
 │   ├── CMakeLists.txt # 编译文件
@@ -39,3 +39,7 @@ vision_crack_detection
 
 - Ubuntu 22.04/20.04
 - Python 3.8/3.11
+
+## 使用说明
+
+各个代码的使用说明位于对应代码文件的开头部分
