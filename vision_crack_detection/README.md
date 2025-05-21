@@ -27,10 +27,10 @@ vision_crack_detection
 │   ├── test_env.py
 │   └── test_realsense.py
 └── weights # 权重文件
-    ├── yolo11s_seg_crack.pt
-    ├── yolov8m.pt
-    ├── yolov8n.pt
-    └── yolov8s_seg_crack.pt
+    ├── crack_yolo11s_seg.pt
+    ├── crack_yolov8m.pt
+    ├── crack_yolov8n.pt
+    └── crack_yolov8s_seg.pt
 ```
 
 ## 环境
