@@ -124,7 +124,7 @@ def draw_ui(image):
 
     # Display points
     for i, p_2d in enumerate(selected_points_2d):
-        cv2.circle(image, p_2d, 5, POINT_COLOR, -1)
+        cv2.circle(image, p_2d, 2, POINT_COLOR, -1)
         p3d = current_measurement_3d_points[i]
         text = f"P{i+1} ({p3d[0]:.2f}, {p3d[1]:.2f}, {p3d[2]:.2f})m"
         cv2.putText(image, text,
