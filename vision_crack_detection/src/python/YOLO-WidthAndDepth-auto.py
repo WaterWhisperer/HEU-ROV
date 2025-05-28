@@ -10,7 +10,7 @@ import math
 from ultralytics import YOLO
 
 # 初始化YOLO模型
-model = YOLO('crack/weights/yolov8s_seg_crack.pt')  # 请确认模型路径正确
+model = YOLO('vision_crack_detection/models/weights/crack_yolov8s_seg.pt')  # 请确认模型路径正确
 
 # RealSense配置
 pipeline = rs.pipeline()
