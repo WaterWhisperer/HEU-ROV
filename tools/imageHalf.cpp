@@ -1,3 +1,8 @@
+/*
+文件名：imageHalf.cpp
+功能：将图像分割为左半部分图像并保存
+*/ 
+
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
