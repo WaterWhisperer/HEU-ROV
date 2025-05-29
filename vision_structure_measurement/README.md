@@ -10,9 +10,14 @@
 
 ```plaintext
 vision_structure_measurement
-├── 3D-Structure-Measure.py
 ├── README.md # 说明文档
-└── requirements.txt # 依赖文件
+└── src # 源代码
+    ├── cpp # C++ 源代码
+    │   ├── 3D-Structure-Measure.cpp
+    │   └── CMakeLists.txt
+    └── python # Python 源代码
+        ├── 3D-Structure-Measure.py
+        └── requirements.txt
 ```
 
 ## 使用说明
