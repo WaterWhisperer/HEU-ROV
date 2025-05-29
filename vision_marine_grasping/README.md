@@ -8,12 +8,15 @@
 
 ```plaintext
 vision_marine_grasping
+├── models # 模型文件
+│   ├── README.md
+│   └── weights # 权重文件
+│       ├── marine_yolo11s.pt
+│       └── marine_yolo12s.pt
 ├── README.md # 说明文档
-├── requirements.txt # 依赖文件
-├── weights # 权重文件
-│   ├── marine_yolo11s.pt
-│   └── marine_yolo12s.pt
-└── YOLO-Marine-Position.py
+└── src # 项目源码
+    ├── requirements.txt
+    └── YOLO-Marine-Position.py
 ```
 
 ## 环境
