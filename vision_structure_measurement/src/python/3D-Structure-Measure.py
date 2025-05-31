@@ -10,6 +10,7 @@
     Press 'c' to clear points.
     Press 'x' to clear all dimensions.
     Press 'p' to plot 3D (need L,W,H).
+    Press 'm' to toggle manual mode.
     Press 'q' to quit.
 '''
 import pyrealsense2 as rs
@@ -37,6 +38,7 @@ intrinsics = None
 depth_scale = 1.0
 typing_mode = False # Not used in this version, direct assignment
 current_label_input = "" # Not used in this version
+show_help = False  # Control help display
 
 # --- Helper Functions ---
 def deproject_pixel_to_point_custom(pixel, depth, intrinsics_obj):
@@ -99,28 +101,40 @@ def mouse_callback(event, x, y, flags, param):
 #     return cv2.cvtColor(np.asarray(combined), cv2.COLOR_RGB2BGR)
 
 def draw_ui(image):
-    global selected_points_2d, current_measurement_3d_points, measurements_log
+    global selected_points_2d, current_measurement_3d_points, measurements_log, show_help
 
     y_offset = 30
-    # English instructions
-    instructions = [
-        "Click 2 points to measure distance.",
-        "After selecting 2 points:",
-        "  Press 'l' for Length",
-        "  Press 'w' for Width",
-        "  Press 'h' for Height",
-        "Press 'c' to clear points.",
-        "Press 'x' to clear all dimensions.",
-        "Press 'p' to plot 3D (need L,W,H).",
-        "Press 'q' to quit."
-    ]
+    # Display help only if enabled
+    if show_help:
+        # English instructions
+        instructions = [
+            "Click 2 points to measure distance.",
+            "After selecting 2 points:",
+            "  Press 'l' for Length",
+            "  Press 'w' for Width",
+            "  Press 'h' for Height",
+            "Press 'c' to clear points.",
+            "Press 'x' to clear all dimensions.",
+            "Press 'p' to plot 3D (need L,W,H).",
+            "Press 'm' to toggle manual mode.",
+            "Press 'q' to quit."
+        ]
 
-    # 使用普通OpenCV文字渲染替代中文渲染
-    for i, instruction in enumerate(instructions):
-        cv2.putText(image, instruction, 
-                   (10, y_offset + i * 25),
+        # 使用普通OpenCV文字渲染替代中文渲染
+        for i, instruction in enumerate(instructions):
+            cv2.putText(image, instruction, 
+                       (10, y_offset + i * 25),
+                        FONT, FONT_SCALE, TEXT_COLOR, 
+                        FONT_THICKNESS)
+        
+        log_y_start = y_offset + len(instructions) * 25 + 10
+    else:
+        # Display minimal instructions when help is hidden
+        cv2.putText(image, "Press 'm' for manual.", 
+                    (10, y_offset),
                     FONT, FONT_SCALE, TEXT_COLOR, 
                     FONT_THICKNESS)
+        log_y_start = y_offset + 30
 
     # Display points
     for i, p_2d in enumerate(selected_points_2d):
@@ -144,7 +158,6 @@ def draw_ui(image):
                     FONT_THICKNESS)
 
     # Display saved dimensions
-    log_y_start = y_offset + len(instructions) * 25 + 10
     cv2.putText(image, "Saved Dimensions:",
                 (10, log_y_start),
                 FONT, 0.7, TEXT_COLOR,
@@ -233,7 +246,7 @@ def plot_3d_structure(length, width, height):
 depth_frame_global = None
 
 def main():
-    global selected_points_2d, current_measurement_3d_points, measurements_log, intrinsics, depth_frame_global, depth_scale
+    global selected_points_2d, current_measurement_3d_points, measurements_log, intrinsics, depth_frame_global, depth_scale, show_help
 
     pipeline = rs.pipeline()
     config = rs.config()
@@ -389,6 +402,8 @@ def main():
                     current_measurement_3d_points.clear()
                 else:
                     print("请先选择2个点来定义一个测量。")
+            elif key == ord('m'):
+                show_help = not show_help
             elif key == ord('p'):
                 plot_3d_structure(measurements_log['Length'], measurements_log['Width'], measurements_log['Height'])
 
