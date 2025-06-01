@@ -136,24 +136,55 @@ def draw_ui(image):
                     FONT_THICKNESS)
         log_y_start = y_offset + 30
 
-    # Display points
+    # Display points with boundary checks
     for i, p_2d in enumerate(selected_points_2d):
         cv2.circle(image, p_2d, 2, POINT_COLOR, -1)
         p3d = current_measurement_3d_points[i]
         text = f"P{i+1} ({p3d[0]:.2f}, {p3d[1]:.2f}, {p3d[2]:.2f})m"
+        
+        # Calculate text size for boundary check
+        (text_width, text_height), _ = cv2.getTextSize(text, FONT, 0.5, FONT_THICKNESS)
+        
+        # Adjust position if near right edge
+        x_pos = p_2d[0] + 10
+        if x_pos + text_width > image.shape[1]:
+            x_pos = p_2d[0] - text_width - 10
+            
+        # Adjust position if near top edge
+        y_pos = p_2d[1] - 10
+        if y_pos - text_height < 0:
+            y_pos = p_2d[1] + text_height + 10
+            
         cv2.putText(image, text,
-                    (p_2d[0] + 10, p_2d[1] - 10),
+                    (x_pos, y_pos),
                     FONT, 0.5, POINT_COLOR,
                     FONT_THICKNESS)
 
-    # Display distance
+    # Display distance with boundary checks
     if len(selected_points_2d) == 2:
         cv2.line(image, selected_points_2d[0], selected_points_2d[1], LINE_COLOR, 2)
         dist = calculate_3d_distance(current_measurement_3d_points[0], current_measurement_3d_points[1])
         mid_point = ((selected_points_2d[0][0] + selected_points_2d[1][0]) // 2,
                     (selected_points_2d[0][1] + selected_points_2d[1][1]) // 2)
-        cv2.putText(image, f"{dist:.3f} m",
-                    (mid_point[0], mid_point[1] - 10),
+        
+        text = f"{dist:.3f} m"
+        # Calculate text size for boundary check
+        (text_width, text_height), _ = cv2.getTextSize(text, FONT, 0.7, FONT_THICKNESS)
+        
+        # Adjust position if near right edge
+        x_pos = mid_point[0]
+        if x_pos + text_width/2 > image.shape[1]:
+            x_pos = image.shape[1] - text_width - 5
+        elif x_pos - text_width/2 < 0:
+            x_pos = text_width/2 + 5
+            
+        # Adjust position if near top edge
+        y_pos = mid_point[1] - 10
+        if y_pos - text_height < 0:
+            y_pos = mid_point[1] + text_height + 10
+            
+        cv2.putText(image, text,
+                    (int(x_pos), int(y_pos)),
                     FONT, 0.7, LINE_COLOR,
                     FONT_THICKNESS)
 
