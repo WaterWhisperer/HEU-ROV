@@ -6,4 +6,6 @@ build/
 *.exe
 # 忽略 IDE 配置文件
 .vscode/
-folder-alias.json
+# 忽略 Python 缓存文件
+__pycache__/
+*.pyc
