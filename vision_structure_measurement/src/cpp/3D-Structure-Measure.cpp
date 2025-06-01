@@ -10,6 +10,7 @@
     Press 'c' to clear points.
     Press 'x' to clear all dimensions.
     Press 'p' to plot 3D (need L,W,H).
+    Press 'm' to toggle manual display.
     Press 'q' to quit.
 */
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
@@ -33,6 +34,8 @@ const double FONT_SCALE = 0.6;
 const int FONT_THICKNESS = 1;
 
 // --- Global Variables & Structs ---
+bool show_help = true; // 初始显示帮助信息
+
 struct CallbackData {
     std::vector<cv::Point2f> selected_points_2d;
     std::vector<rs2::vertex> current_measurement_3d_points;
@@ -49,7 +52,7 @@ std::map<std::string, std::optional<double>> measurements_log = {
 };
 const std::string WINDOW_NAME = "ROV Measurement - D455 (C++)";
 
-// --- Helper Functions (Identical to previous correct version) ---
+// --- Helper Functions ---
 rs2::vertex deproject_pixel_to_point_custom(const cv::Point2f& pixel, float depth, const rs2_intrinsics& intrinsics_obj) {
     float point[3];
     float pix_arr[2] = {pixel.x, pixel.y};
@@ -102,20 +105,52 @@ void draw_ui(cv::Mat& image, CallbackData& data) {
         "Click 2 points to measure distance.", "After selecting 2 points:",
         "  Press 'l' for Length", "  Press 'w' for Width", "  Press 'h' for Height",
         "Press 'c' to clear points.", "Press 'x' to clear all dimensions.",
-        "Press 'p' to plot 3D (need L,W,H).", "Press 'q' to quit."
+        "Press 'p' to plot 3D (need L,W,H).", "Press 'm' to toggle manual display.",
+        "Press 'q' to quit."
     };
-    for (size_t i = 0; i < instructions.size(); ++i) {
-        cv::putText(image, instructions[i], cv::Point(10, y_offset + i * 20), FONT_FACE, FONT_SCALE * 0.8, TEXT_COLOR, FONT_THICKNESS, cv::LINE_AA);
+    
+    // 根据show_help决定是否显示完整帮助
+    if (show_help) {
+        for (size_t i = 0; i < instructions.size(); ++i) {
+            cv::putText(image, instructions[i], cv::Point(10, y_offset + i * 20), FONT_FACE, FONT_SCALE * 0.8, TEXT_COLOR, FONT_THICKNESS, cv::LINE_AA);
+        }
+    } else {
+        // 只显示最小指令
+        cv::putText(image, "Press 'm' for manual", cv::Point(10, y_offset),
+                    FONT_FACE, FONT_SCALE * 0.8, TEXT_COLOR, FONT_THICKNESS, cv::LINE_AA);
     }
+    
+    int log_y_start = show_help ? (y_offset + static_cast<int>(instructions.size()) * 20 + 10) : (y_offset + 30);
+    
+    // 绘制点和文本（带边界检查）
     for (size_t i = 0; i < data.selected_points_2d.size(); ++i) {
         cv::circle(image, data.selected_points_2d[i], 3, POINT_COLOR, -1, cv::LINE_AA);
         const auto& p3d = data.current_measurement_3d_points[i];
         std::ostringstream p_text;
         p_text << std::fixed << std::setprecision(2) << "P" << i + 1 << " (" << p3d.x << ", " << p3d.y << ", " << p3d.z << ")m";
-        cv::putText(image, p_text.str(),
-                    cv::Point(static_cast<int>(data.selected_points_2d[i].x) + 10, static_cast<int>(data.selected_points_2d[i].y) - 10),
+        
+        // 点坐标文本边界检查
+        int text_x = static_cast<int>(data.selected_points_2d[i].x) + 10;
+        int text_y = static_cast<int>(data.selected_points_2d[i].y) - 10;
+        
+        // 计算文本尺寸
+        int baseline = 0;
+        cv::Size text_size = cv::getTextSize(p_text.str(), FONT_FACE, 0.5, FONT_THICKNESS, &baseline);
+        
+        // 检查右边界
+        if (text_x + text_size.width > image.cols) {
+            text_x = static_cast<int>(data.selected_points_2d[i].x) - text_size.width - 10;
+        }
+        
+        // 检查上边界
+        if (text_y - text_size.height < 0) {
+            text_y = static_cast<int>(data.selected_points_2d[i].y) + text_size.height + 10;
+        }
+        
+        cv::putText(image, p_text.str(), cv::Point(text_x, text_y),
                     FONT_FACE, 0.5, POINT_COLOR, FONT_THICKNESS, cv::LINE_AA);
     }
+    
     if (data.selected_points_2d.size() == 2) {
         cv::line(image, data.selected_points_2d[0], data.selected_points_2d[1], LINE_COLOR, 1, cv::LINE_AA);
         double dist = calculate_3d_distance(data.current_measurement_3d_points[0], data.current_measurement_3d_points[1]);
@@ -123,9 +158,33 @@ void draw_ui(cv::Mat& image, CallbackData& data) {
                              (data.selected_points_2d[0].y + data.selected_points_2d[1].y) / 2);
         std::ostringstream dist_text;
         dist_text << std::fixed << std::setprecision(3) << dist << " m";
-        cv::putText(image, dist_text.str(), cv::Point(mid_point.x, mid_point.y - 10), FONT_FACE, FONT_SCALE, LINE_COLOR, FONT_THICKNESS, cv::LINE_AA);
+        
+        // 距离文本边界检查
+        int text_x = mid_point.x;
+        int text_y = mid_point.y - 10;
+        
+        // 计算文本尺寸
+        int baseline = 0;
+        cv::Size text_size = cv::getTextSize(dist_text.str(), FONT_FACE, FONT_SCALE, FONT_THICKNESS, &baseline);
+        
+        // 检查右边界
+        if (text_x + text_size.width/2 > image.cols) {
+            text_x = image.cols - text_size.width - 5;
+        }
+        // 检查左边界
+        else if (text_x - text_size.width/2 < 0) {
+            text_x = text_size.width/2 + 5;
+        }
+        
+        // 检查上边界
+        if (text_y - text_size.height < 0) {
+            text_y = mid_point.y + text_size.height + 10;
+        }
+        
+        cv::putText(image, dist_text.str(), cv::Point(text_x, text_y), 
+                    FONT_FACE, FONT_SCALE, LINE_COLOR, FONT_THICKNESS, cv::LINE_AA);
     }
-    int log_y_start = y_offset + static_cast<int>(instructions.size()) * 20 + 10;
+    
     cv::putText(image, "Saved Dimensions:", cv::Point(10, log_y_start), FONT_FACE, FONT_SCALE, TEXT_COLOR, FONT_THICKNESS, cv::LINE_AA);
     int i = 0;
     for (const auto& pair : measurements_log) {
@@ -140,7 +199,6 @@ void draw_ui(cv::Mat& image, CallbackData& data) {
         i++;
     }
 }
-// --- End of Helper Functions ---
 
 void plot_3d_structure(const std::optional<double>& length_opt, const std::optional<double>& width_opt, const std::optional<double>& height_opt) {
     if (!length_opt.has_value() || !width_opt.has_value() || !height_opt.has_value()) {
@@ -380,6 +438,9 @@ int main() {
                 }
             } else if (key == 'p') {
                  plot_3d_structure(measurements_log["Length"], measurements_log["Width"], measurements_log["Height"]);
+            } else if (key == 'm') {
+                show_help = !show_help; // 切换帮助信息显示
+                std::cout << "Help display " << (show_help ? "enabled" : "disabled") << std::endl;
             }
         }
     } catch (const rs2::error & e) {
