@@ -1,9 +1,9 @@
 /*  
-文件名：Mouse-DistanceAndDepth.cpp  
-功能：
-    Depth Measurement窗口：通过鼠标左键拖动框选后，计算框选区域的深度。
-    Distance Measurement窗口：通过鼠标左键点击两点测量实际距离。
-*/
+ * 文件名：Mouse-DistanceAndDepth.cpp  
+ * 功能：
+ *      Depth Measurement窗口：通过鼠标左键拖动框选后，计算框选区域的深度。
+ *      Distance Measurement窗口：通过鼠标左键点击两点测量实际距离。
+ */
 #include <librealsense2/rs.hpp>
 #include <opencv2/opencv.hpp>
 #include <vector>

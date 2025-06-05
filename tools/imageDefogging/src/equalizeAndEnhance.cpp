@@ -1,7 +1,7 @@
 /*  
- *文件名：equalizeAndEnhance.cpp
- *功能：实现图像增强，包括直方图均衡化、增强饱和度
-*/
+ * 文件名：equalizeAndEnhance.cpp
+ * 功能：实现图像增强，包括直方图均衡化、增强饱和度
+ */
 #include <opencv2/opencv.hpp>
 #include <iostream>
 

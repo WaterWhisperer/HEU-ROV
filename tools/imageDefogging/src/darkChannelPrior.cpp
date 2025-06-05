@@ -1,7 +1,7 @@
 /*
- *文件名：darkChannelPrior.cpp
- *功能：计算暗通道图像、估计大气光、计算传输图、恢复图像
-*/
+ * 文件名：darkChannelPrior.cpp
+ * 功能：计算暗通道图像、估计大气光、计算传输图、恢复图像
+ */
 #include <opencv2/opencv.hpp>
 #include <iostream>
 

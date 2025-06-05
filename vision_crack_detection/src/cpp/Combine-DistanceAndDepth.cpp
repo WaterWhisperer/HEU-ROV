@@ -1,9 +1,9 @@
 /*  
-文件名: Combine-DistanceAndDepth.cpp
-功能：深度测量和距离测量的结合，显示在同一窗口中。
-    Depth Measurement：左侧视图，用于深度测量。
-    Distance Measurement：右侧视图，用于距离测量。
-*/
+ * 文件名: Combine-DistanceAndDepth.cpp
+ * 功能：深度测量和距离测量的结合，显示在同一窗口中。
+ *      Depth Measurement：左侧视图，用于深度测量。
+ *      Distance Measurement：右侧视图，用于距离测量。
+ */
 #include <librealsense2/rs.hpp>
 #include <opencv2/opencv.hpp>
 #include <vector>

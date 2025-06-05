@@ -1,18 +1,18 @@
 /*
-文件名：3D-Structure-Measure.cpp
-功能：使用双目相机测量3D结构物的长度、宽度和高度。
-使用方法：
-    Click 2 points to measure distance.
-    After selecting 2 points:
-        Press 'l' for Length
-        Press 'w' for Width
-        Press 'h' for Height
-    Press 'c' to clear points.
-    Press 'x' to clear all dimensions.
-    Press 'p' to plot 3D (need L,W,H).
-    Press 'm' to toggle manual display.
-    Press 'q' to quit.
-*/
+ * 文件名：3D-Structure-Measure.cpp
+ * 功能：使用双目相机测量3D结构物的长度、宽度和高度。
+ * 使用方法：
+ *      Click 2 points to measure distance.
+ *          After selecting 2 points:
+ *              Press 'l' for Length
+ *              Press 'w' for Width
+ *              Press 'h' for Height
+ *      Press 'c' to clear points.
+ *      Press 'x' to clear all dimensions.
+ *      Press 'p' to plot 3D (need L,W,H).
+ *      Press 'm' to toggle manual display.
+ *      Press 'q' to quit.
+ */
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
 #include <opencv2/opencv.hpp>   // Include OpenCV API
 #include <opencv2/viz.hpp>      // Include OpenCV Viz module for 3D plotting
