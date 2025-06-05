@@ -118,7 +118,7 @@ def motowhitebalance(originalImage):
 # 主程序
 if __name__ == "__main__":
     # 读取图像
-    originalImage = cv2.imread('/home/water/桌面/ROV/data1.jpg')
+    originalImage = cv2.imread('test.jpg')
     if originalImage is None:
         print('Could not read the image.')
         exit(1)
