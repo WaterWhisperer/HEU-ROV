@@ -7,4 +7,5 @@
 - vision_crack_detection
 - vision_marine_grasping
 - vision_structure_measurement
+- vision_video_streaming
 - tools

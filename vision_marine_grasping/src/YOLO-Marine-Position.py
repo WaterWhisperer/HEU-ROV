@@ -11,7 +11,7 @@ import torch
 import sys
 from ultralytics import YOLO
 
-model = YOLO('') # 训练相关模型后，将模型路径填入''中 
+model = YOLO('vision_marine_grasping/models/weights/marine_yolo11s.pt') # 训练相关模型后，将模型路径填入''中 
 
 # 对齐对象和彩色相机内参
 align_to = rs.stream.color
