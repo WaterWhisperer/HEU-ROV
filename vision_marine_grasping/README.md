@@ -11,8 +11,9 @@ vision_marine_grasping
 ├── models # 模型文件
 │   ├── README.md
 │   └── weights # 权重文件
-│       ├── marine_yolo11s.pt
-│       └── marine_yolo12s.pt
+│       ├── origin_marine_yolo11s.pt
+│       ├── origin_marine_yolo12s.pt
+│       └── test_marine_yolo11n.pt
 ├── README.md # 说明文档
 └── src # 项目源码
     ├── requirements.txt
