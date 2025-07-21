@@ -2,3 +2,4 @@ numpy
 opencv-python
 ultralytics
 pyrealsense2
+pyserial #用于串口通信
