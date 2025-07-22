@@ -1,73 +1,197 @@
+# import struct
+# import serial
+# from my_packages import get_YOLO_result as gYr
+# import pyrealsense2 as rs
+# import numpy as np
+
+# def pack_frame(float_list: list[float]) -> bytes:
+#     """
+#     把一组 float 打包成完整串口帧
+#     帧格式：
+#         [0xAA, 0x55]  帧头(2B)
+#         length        数据字节数(1B，不含校验/帧头帧尾)
+#         float_data    小端 float 数组
+#         [0x55, 0xAA]  帧尾(2B)
+#     """
+#     #浮点数组 -> bytes，小端 4 字节
+#     data = struct.pack(f'<{len(float_list)}f', *float_list)
+
+#     #长度字段：数据字节数（最大 255）
+#     if len(data) > 255:
+#         raise ValueError('一次最多发送 63 个 float')
+
+#     #拼接完整帧
+#     frame = b'\xAA\x55' + bytes([len(data)]) + data  + b'\x55\xAA'
+#     return frame
+
+
+# def send_info(ser: serial.Serial, float_list: list[float]) -> None:
+#     frame = pack_frame(float_list)
+#     ser.write(frame)
+#     print(f'TX ({len(frame)}B):', ' '.join(f'{b:02X}' for b in frame))
+
+
+# # -------------------------------------
+# if __name__ == '__main__':
+#     #初始化相机与YOLO模型
+#     color_fps = 30
+#     depth_fps = 30
+#     model_path = 'vision_marine_grasping/models/weights/test_marine_yolo11n.pt'
+#     realsense_align, realsense_pipeline, realsense_profile = gYr.open_realsense_camera(color_fps, depth_fps)
+#     model = gYr.YOLO_init(model_path)
+
+#     # 获取对齐后的彩色相机内参
+#     color_profile = realsense_profile.get_stream(rs.stream.color)
+#     color_intrinsics = color_profile.as_video_stream_profile().get_intrinsics()
+
+#     # 初始化串口数组
+#     ser_info = []
+    
+#     while True:
+#         frames = realsense_pipeline.wait_for_frames()
+
+#         # 执行深度到彩色图的对齐
+#         aligned_frames = realsense_align.process(frames)
+#         depth_frame = aligned_frames.get_depth_frame()
+#         color_frame = aligned_frames.get_color_frame()
+        
+#         if not depth_frame or not color_frame:
+#             continue
+
+#         color_image = np.asanyarray(color_frame.get_data())
+        
+#         # YOLO检测
+#         results = model(color_image)
+#         print(f'Detections:{list(results.names)}')
+        
+#         #boxes = results[0].boxes.xyxy.cpu().tolist()
+
+#         targets = gYr.get_target(results, confience_threshold=0.75, depth_frame=depth_frame, intrinsics=color_intrinsics )
+        
+#         # 显示优化后的检测结果
+#         gYr.show_debug_image(color_image, targets)
+
+#         # 退出控制
+#         if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:
+#             break
+                
+#         # 发送检测到的目标坐标
+#         ser_info.append(targets[0][0])
+#         ser_info.append(targets[0][1])
+#         ser_info.append(targets[0][2])
+#         with serial.Serial('COM3', 115200, timeout=1) as ser:
+#             send_info(ser, ser_info)
+#             ser_info.clear()
+
+
 import struct
 import serial
 from my_packages import get_YOLO_result as gYr
+import pyrealsense2 as rs
+import numpy as np
+import cv2
 
-def pack_frame(float_list: list[float]) -> bytes:
+def pack_frame(data_list):
     """
-    把一组 float 打包成完整串口帧
-    帧格式：
-        [0xAA, 0x55]  帧头(2B)
-        length        数据字节数(1B，不含校验/帧头帧尾)
-        float_data    小端 float 数组
-        [0x55, 0xAA]  帧尾(2B)
+    将浮点数列表打包到一个完整的串行帧中。
+    Frame format:
+        [0xAA, 0x55]  - Frame Header (2B)
+        length        - Data byte count (1B, excludes header, footer, and checksum)
+        float_data    - Little-endian float array
+        [0x55, 0xAA]  - Frame Footer (2B)
     """
-    #浮点数组 -> bytes，小端 4 字节
-    data = struct.pack(f'<{len(float_list)}f', *float_list)
+    if not data_list:
+        return b''
+    # 将浮点数组打包为字节
+    data = struct.pack(f'<{len(data_list)}f', *data_list)
 
-    #长度字段：数据字节数（最大 255）
     if len(data) > 255:
-        raise ValueError('一次最多发送 63 个 float')
+        raise ValueError('Cannot send more than 63 floats at a time.')
 
-    #拼接完整帧
-    frame = b'\xAA\x55' + bytes([len(data)]) + data  + b'\x55\xAA'
+    # 构建完整帧
+    frame = b'\xAA\x55' + bytes([len(data)]) + data + b'\x55\xAA'
     return frame
 
-
-def send_floats(ser: serial.Serial, float_list: list[float]) -> None:
-    frame = pack_frame(float_list)
+def send_info(ser, data_list):
+    """通过串行端口发送浮点数列表。"""
+    if not data_list:
+        print("No data to send.")
+        return
+    frame = pack_frame(data_list)
     ser.write(frame)
     print(f'TX ({len(frame)}B):', ' '.join(f'{b:02X}' for b in frame))
 
+def main():
+    """运行对象检测和串行通信的主要功能。"""
+    # --- 配置 ---
+    COLOR_FPS = 30
+    DEPTH_FPS = 30
+    MODEL_PATH = 'vision_marine_grasping/models/weights/test_marine_yolo11n.pt'
+    SERIAL_PORT = 'COM3'
+    BAUD_RATE = 115200
+    CONFIDENCE_THRESHOLD = 0.75
 
-# -------------------------------------
+    realsense_pipeline = None
+    ser = None
+    try:
+        # --- 初始化 ---
+        # 初始化相机与YOLO模型
+        realsense_align, realsense_pipeline, realsense_profile = gYr.open_realsense_camera(COLOR_FPS, DEPTH_FPS)
+        model = gYr.YOLO_init(MODEL_PATH)
+
+        # 获取相机内参
+        color_profile = realsense_profile.get_stream(rs.stream.color)
+        color_intrinsics = color_profile.as_video_stream_profile().get_intrinsics()
+
+        # 初始化串口
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        print(f"Serial port {SERIAL_PORT} opened successfully.")
+
+        # --- 主循环 ---
+        while True:
+            frames = realsense_pipeline.wait_for_frames()
+
+            # 将深度与颜色框架对齐
+            aligned_frames = realsense_align.process(frames)
+            depth_frame = aligned_frames.get_depth_frame()
+            color_frame = aligned_frames.get_color_frame()
+            
+            if not depth_frame or not color_frame:
+                continue
+
+            color_image = np.asanyarray(color_frame.get_data())
+            
+            # YOLO 检测
+            results = model(color_image)
+            
+            targets = gYr.get_target(results, confience_threshold=CONFIDENCE_THRESHOLD, depth_frame=depth_frame, intrinsics=color_intrinsics)
+          
+            # 显示检测结果
+            gYr.show_debug_image(color_image, targets)
+
+            # 退出条件
+            if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:
+                break
+                    
+            # 发送目标坐标
+            if targets:
+                closest_target_coords = targets[0][0]
+                send_info(ser, closest_target_coords)
+
+    except serial.SerialException as e:
+        print(f"Serial Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+    finally:
+        # --- 退出 ---
+        if realsense_pipeline:
+            realsense_pipeline.stop()
+            print("RealSense pipeline stopped.")
+        if ser and ser.is_open:
+            ser.close()
+            print(f"Serial port {SERIAL_PORT} closed.")
+        cv2.destroyAllWindows()
+        print("OpenCV windows destroyed.")
+
 if __name__ == '__main__':
-    #初始化相机与YOLO模型
-    color_fps = 30
-    depth_fps = 30
-    model_path = 'vision_marine_grasping/models/weights/test_marine_yolo11n.pt'
-    realsense_align, realsense_pipeline, realsense_profile = gYr.open_realsense_camera(color_fps, depth_fps)
-    model = gYr.YOLO_init(model_path)
-
-    # 获取对齐后的彩色相机内参
-    color_profile = realsense_profile.get_stream(rs.stream.color)
-    color_intrinsics = color_profile.as_video_stream_profile().get_intrinsics()
-
-    while True:
-        frames = realsene_pipeline.wait_for_frames()
-
-        # 执行深度到彩色图的对齐
-        aligned_frames = realsense_align.process(frames)
-        depth_frame = aligned_frames.get_depth_frame()
-        color_frame = aligned_frames.get_color_frame()
-        
-        if not depth_frame or not color_frame:
-            continue
-
-        color_image = np.asanyarray(color_frame.get_data())
-        
-        # YOLO检测
-        results = model(color_image)
-        boxes = results[0].boxes.xyxy.cpu().tolist()
-
-        # 显示优化后的检测结果
-        dectshow(color_image, boxes, depth_frame, color_intrinsics)
-
-        # 退出控制
-        if cv2.waitKey(1) & 0xFF in [ord('q'), 27]:
-            break
-                
-
-
-    floats = [1.23, -4.56, 7.89e3, 0.0, 3.1415926]
-    with serial.Serial('COM3', 115200, timeout=1) as ser:
-        send_floats(ser, floats)
+    main()
