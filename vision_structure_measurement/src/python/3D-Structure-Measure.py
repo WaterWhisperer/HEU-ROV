@@ -17,6 +17,9 @@ import pyrealsense2 as rs
 import numpy as np
 import cv2
 import math
+import os
+import platform
+import time
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection, Line3DCollection, Text3D
 # from PIL import ImageFont, ImageDraw, Image # 如果需要中文文字渲染，注释掉此行
@@ -271,6 +274,22 @@ def plot_3d_structure(length, width, height):
     ax.set_zlim([-height*0.2, height * 1.2])
     ax.view_init(elev=20., azim=-35) #调整视角
     plt.tight_layout()
+
+    def on_key(event):
+        if event.key == 's':
+            # Determine desktop based on OS
+            if platform.system() == 'Windows':
+                desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
+            else: # Linux and macOS
+                desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
+
+            # Generate filename with timestamp
+            filename = os.path.join(desktop, f'3d_structure_{int(time.time())}.png')
+            plt.savefig(filename, dpi=300, bbox_inches='tight')
+            print(f'3D plot saved to : {filename}')
+
+    fig.canvas.mpl_connect('key_press_event', on_key)
+    print("Press 's' to save 3D plot to desktop")
     plt.show()
 
 # --- Main Function ---
